@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "SilverStripe admin quick links",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Admin quick links for Silverstripe websites.",
   "browser_action": {
     "browser_style": true,
@@ -20,5 +20,11 @@
         "storage",
         "tabs",
         "notifications"
-  ]
+  ],
+  "applications": {
+      "gecko": {
+          "id": "jaredkeithdreyer@gmail.com",
+          "strict_min_version": "67.0"
+      }
+  }
 }
