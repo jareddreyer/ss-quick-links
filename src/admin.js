@@ -5,22 +5,27 @@ function onError(e) {
   console.error(e);
 }
 
-function saveOptions() {
- 	var switchState = document.getElementById("tabOption").checked;
+/*
+ * get option state
+ * 
+ */
+const setting = { 'initialValue' : false };
 
-    browser.storage.sync.set({
-        'initialValue' : switchState
-    }, function () {
-        console.log("Switch Saved as " + switchState);
-    });
+function saveOptions() 
+{
+	let settings = {}
+    settings = {
+      initialValue: document.getElementById('tabOption').checked  // override show with real data
+    }
+
+    browser.storage.sync.set(settings).then(null, onError);
 }
 
-function restoreOptions() {
- 	browser.storage.sync.get({
-        //False is the default value when first opening the extension
-        'initialValue' : false
-    }, function (items) {
-        document.getElementById('tabOption').checked = items.initialValue;
+function restoreOptions()
+{
+    browser.storage.sync.get(setting).then(
+    (data) => {
+      document.getElementById('tabOption').checked = data.initialValue;
     });
 }
 
@@ -119,6 +124,19 @@ document.addEventListener("click", (e) => {
 				tabDestination(url, environment, path = url.pathname);			
 			}
 			
+		} else if (e.target.id === "admin-flush-cache-page")
+		{
+			if(url.search.length == 0)
+			{
+				// no stage set, assume user wants to go to Stage
+				stage = '?flush=1';	
+				tabDestination(url, hostname, url.pathname + stage);
+
+			} else if(url.search.includes('flush=1') === true)
+			{
+				browser.tabs.update({'url': url.protocol + '//' + hostname + url.pathname + url.search });
+			}
+
 		} else if (e.target.id === "admin-goto-admin") 
 		{
 			path = '/admin';

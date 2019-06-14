@@ -20,13 +20,5 @@
         "storage",
         "tabs",
         "notifications"
-  ],
-  "applications": {
-      "gecko": {
-          "id": "jaredkeithdreyer@gmail.com",
-          "strict_min_version": "67.0"
-      }
-  }
-  
-
+  ]
 }

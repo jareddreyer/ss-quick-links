@@ -1,7 +1,9 @@
 html, body 
 {
 	background-color: #FFF;
-	width: 290px;
+	width: 300px;
+	font-size: 14px;
+	margin: 0;
 }
 
 a
@@ -12,11 +14,36 @@ a
 	cursor: pointer
 }
 
-a:active {
-	color: red;
-}
+a:active { color: #CCC }
 
 .panel { margin: 10px}
+
+.panel-section-header
+{
+	border: 0;
+	padding: 0;
+	padding-top: 1em;
+}
+
+.panel-section-separator
+{
+	height: 1px;
+	background-color: #EEE;
+	margin: 1em 0;
+	margin-bottom: .4em;
+}
+
+.text-section-header
+{
+	text-align: center;
+	font-size: 1.2rem;
+}
+
+.new-window {
+	text-align:right;
+	font-size: 80%;
+	padding-top: 1em
+}
 
 .switch 
 {
@@ -72,9 +99,3 @@ input:checked + .slider:before {
 /* Rounded sliders */
 .slider.round { border-radius: 34px }
 .slider.round:before { border-radius: 50% }
-
-.new-window {
-	margin-top: .8em;
-	float:right;
-	font-size: 80%;
-}
