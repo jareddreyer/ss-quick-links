@@ -12,8 +12,8 @@ An easy clickable interface to functions and administrator sections of a SilverS
 - different manifest.json files - due to Chromium and Gecko differing in their API's.
 
 ## How to install in Chrome
-- create folder with Chromium manifest.json.
-- clone entire /src/ folder from directory above.
+- First git clone or download this repo to your local hard drive.
+- copy entire /src/ to /build/chromium/ folder
 - go to chrome://extensions/.
 - Check if 'devleoper mode' is active.
 - click load unpacked.
