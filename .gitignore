@@ -1,3 +1,7 @@
 /node_modules/
 *.zip
 /build/export/
+.DS_Store
+.idea/
+.vscode/
+/src/manifest.json

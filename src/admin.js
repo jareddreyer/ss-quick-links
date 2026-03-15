@@ -1,150 +1,144 @@
-/*
-Generic error logger.
-*/
-function onError(e) {
-  console.error(e);
-}
+const setting = { 'initialValue': false };
+const onError = (e) => console.error(`Error: ${e}`);
 
-/*
- * get option state
- * 
+/**
+ * Updates the Status Bar UI based on the current URL.
+ * Matches the class ".status-bar" and uses case-insensitive regex.
  */
-const setting = { 'initialValue' : false };
+function updateStatusUI(url) {
+  const statusBar = document.querySelector('.status-bar');
+  if (!statusBar) return;
 
-function saveOptions() 
-{
-	let settings = {}
-    settings = {
-      initialValue: document.getElementById('tabOption').checked  // override show with real data
-    }
+  // Case-insensitive check for stage=stage or stage=Stage
+  const isDraft = /stage=stage/i.test(url.search);
 
-    browser.storage.sync.set(settings).then(null, onError);
+  if (isDraft) {
+    statusBar.textContent = 'DRAFT';
+    statusBar.style.backgroundColor = '#ffc107'; // Yellow for Draft
+    statusBar.style.color = '#212529';
+  } else {
+    statusBar.textContent = 'LIVE';
+    statusBar.style.backgroundColor = '#28a745'; // Green for Live
+    statusBar.style.color = '#ffffff';
+  }
 }
 
-function restoreOptions()
-{
-    browser.storage.sync.get(setting).then(
-    (data) => {
-      document.getElementById('tabOption').checked = data.initialValue;
-    });
+function saveOptions() {
+  const settings = {
+    initialValue: document.getElementById('tabOption').checked
+  };
+  browser.storage.sync.set(settings).then(null, onError);
+}
+
+function restoreOptions() {
+  browser.storage.sync.get(setting).then((data) => {
+    document.getElementById('tabOption').checked = data.initialValue;
+  });
 }
 
 function getCurrentWindowTab() {
-  return browser.tabs.query({active: true, currentWindow: true});
+  return browser.tabs.query({ active: true, currentWindow: true });
 }
-
-document.addEventListener('DOMContentLoaded', function () {
-    restoreOptions();    
-});
 
 function tabDestination(url, hostname, path) {
-	
-	if (document.getElementById('tabOption').checked === true)
-	{
-		browser.tabs.create({'url': url.protocol + '//' + hostname + path });
-	} else {
-		browser.tabs.update({'url': url.protocol + '//' + hostname + path });
-	}
+  const targetUrl = `${url.protocol}//${hostname}${path}`;
+  const openInNewTab = document.getElementById('tabOption').checked;
+
+  if (openInNewTab) {
+    browser.tabs.create({ url: targetUrl });
+  } else {
+    browser.tabs.update({ url: targetUrl });
+  }
 }
 
-document.addEventListener("click", (e) => {
+document.addEventListener('DOMContentLoaded', () => {
+  restoreOptions();
 
-	if(e.target.id === "tabOption")
-	{
-		saveOptions();
-	}
+  // Check the current tab status immediately on popup open
+  getCurrentWindowTab().then(([tab]) => {
+    if (tab?.url) {
+      updateStatusUI(new URL(tab.url));
+    }
+  }).catch(onError);
+});
 
-	var myTab = getCurrentWindowTab();
-	
-	myTab.then(function([currentTab]){
+document.addEventListener("click", async (e) => {
+  // 1. Handle Toggle Switch (Keep menu open so user can change settings)
+  if (e.target.id === "tabOption") {
+    saveOptions();
+    return;
+  }
 
-		const url = new URL(currentTab.url);
-		const draft = 'stage=Stage';
-	 	const live  = 'stage=Live';
-	 	const uat = '-uat.';
-	 	const prod = '-prod.';
-	 	let hostname = url.hostname;
-	 	let environment;
-		let path;
-		let stage;
+  // 2. Ensure we are clicking an actual action button
+  if (!e.target.classList.contains('admin-btn')) return;
 
-		if (e.target.id === "admin-run-devbuild") {
-			path = '/dev/build';
-			tabDestination(url, hostname, path);
+  e.preventDefault();
 
-	 	} else if (e.target.id === "admin-goto-devtasks") 
-	 	{
-	 		path = '/dev/tasks';
-			tabDestination(url, hostname, path);
+  const [currentTab] = await getCurrentWindowTab();
+  if (!currentTab?.url) return;
 
-	 	} else if (e.target.id === "admin-goto-dev")
-	 	{
-	 		path = '/dev/';
-			tabDestination(url, hostname, path);
+  const url = new URL(currentTab.url);
+  const hostname = url.hostname;
 
-	 	} else if (e.target.id === "admin-change-stage") 
-	 	{
+  const STAGE_DRAFT = 'stage=Stage';
+  const STAGE_LIVE = 'stage=Live';
+  const ENV_UAT = '-uat.';
+  const ENV_PROD = '-prod.';
 
-			if(url.search.length == 0)
-			{
-				// no stage set, assume user wants to go to Stage
-				stage = '?' + draft;	
+  // Map simple IDs to paths
+  const simplePaths = {
+    "admin-run-devbuild": '/dev/build',
+    "admin-goto-devtasks": '/dev/tasks',
+    "admin-goto-dev": '/dev/',
+    "admin-goto-admin": '/admin',
+    "admin-logout": '/Security/logout',
+    "admin-goto-home": '/', // Redirects to the root domain
+  };
 
-			} else if(url.search.includes(draft) === true)
-			{
-				stage = url.search.replace(draft, live);
+  // Execute logic based on ID
+  if (simplePaths[e.target.id]) {
+    tabDestination(url, hostname, simplePaths[e.target.id]);
+  } else {
+    switch (e.target.id) {
+      case "admin-change-stage":
+        let newQuery = '';
+        const hasDraft = /stage=stage/i.test(url.search);
+        const hasLive = /stage=live/i.test(url.search);
 
-			} else if(url.search.includes(live) === true)
-			{
-				stage = url.search.replace(live, draft);
-			}
+        if (!url.search || (!hasDraft && !hasLive)) {
+          newQuery = url.search ? `${url.search}&${STAGE_DRAFT}` : `?${STAGE_DRAFT}`;
+        } else if (hasDraft) {
+          newQuery = url.search.replace(/stage=stage/i, STAGE_LIVE);
+        } else {
+          newQuery = url.search.replace(/stage=live/i, STAGE_DRAFT);
+        }
+        tabDestination(url, hostname, url.pathname + newQuery);
+        break;
 
-			tabDestination(url, hostname, url.pathname + stage);	
+      case "admin-change-environment":
+        if (!hostname.includes(ENV_PROD) && !hostname.includes(ENV_UAT)) {
+          browser.notifications.create({
+            "type": "basic",
+            "title": "Environment Swap",
+            "message": "Please use only SSP URLs to swap environments."
+          });
+        } else {
+          const newHost = hostname.includes(ENV_UAT)
+            ? hostname.replace(ENV_UAT, ENV_PROD)
+            : hostname.replace(ENV_PROD, ENV_UAT);
+          tabDestination(url, newHost, url.pathname + url.search);
+        }
+        break;
 
-	 	} else if (e.target.id === "admin-change-environment") 
-	 	{
+      case "admin-flush-cache-page":
+        const flushQuery = /flush=1/i.test(url.search)
+          ? url.search
+          : (url.search ? `${url.search}&flush=1` : '?flush=1');
+        tabDestination(url, hostname, url.pathname + flushQuery);
+        break;
+    }
+  }
 
-			if(url.hostname.includes(prod) === false && url.hostname.includes(uat) === false)
-			{
-				browser.notifications.create({
-				  "type": "basic",
-				  "iconUrl": browser.extension.getURL("icons/ssicon-96.png"),
-				  "title": '',
-				  "message": "Please use only SSP URLs to swap environments."
-				});
-
-			} else if(url.hostname.includes(uat) === true )
-			{
-				environment = url.hostname.replace(uat, prod);
-				tabDestination(url, environment, path = url.pathname);
-
-			} else if(url.hostname.includes(prod) === true )
-			{
-				environment = url.hostname.replace(prod, uat);
-				tabDestination(url, environment, path = url.pathname);			
-			}
-			
-		} else if (e.target.id === "admin-flush-cache-page")
-		{
-			if(url.search.length == 0)
-			{
-				// no stage set, assume user wants to go to Stage
-				stage = '?flush=1';	
-				tabDestination(url, hostname, url.pathname + stage);
-
-			} else if(url.search.includes('flush=1') === true)
-			{
-				browser.tabs.update({'url': url.protocol + '//' + hostname + url.pathname + url.search });
-			}
-
-		} else if (e.target.id === "admin-goto-admin") 
-		{
-			path = '/admin';
-			tabDestination(url, hostname, path);
-		}
-
-		e.preventDefault();
-
-	}, onError);	
-
+  // 3. Close the popup window after the action is triggered
+  window.close();
 });

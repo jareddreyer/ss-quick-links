@@ -1,44 +1,43 @@
 <!DOCTYPE html>
-
-<html>
-  <head>
+<html lang="">
+<head>
     <meta charset="utf-8">
     <script type="application/javascript" src="browser-polyfill.min.js"></script>
     <link rel="stylesheet" href="admin.css"/>
-  </head>
+    <title></title>
+</head>
+<body>
+    <div class="status-bar">LIVE</div>
 
-  <body>
     <div class="panel">
-      <div class="panel-section-header">
-        <div class="text-section-header">SilverStripe Admin Quick Links</div>
-        <div class="new-window">
-          Open all links in new Tab?
-          <label class="switch">
-            <input type="checkbox" id="tabOption">
-            <span class="slider round"></span>
-          </label>
+        <div class="panel__content">
+            <div class="new-window">
+                Open all links in new window/tab?
+                <label class="switch">
+                    <input type="checkbox" id="tabOption">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="panel__group-label">DEVELOPER TOOLS</div>
+            <a id="admin-run-devbuild" class="admin-btn">Run /dev/build</a>
+            <a id="admin-goto-devtasks" class="admin-btn">Open /dev/tasks</a>
+            <a id="admin-goto-dev" class="admin-btn">Open /dev</a>
+
+            <div class="panel-section-separator"></div>
+
+            <div class="panel__group-label">ENVIRONMENT</div>
+            <a id="admin-change-stage" class="admin-btn">Change Stage</a>
+            <a id="admin-change-environment" class="admin-btn">Change Environment</a>
+            <a id="admin-flush-cache-page" class="admin-btn">Flush cache</a>
+
+            <div class="panel-section-separator"></div>
+            <div class="panel__group-label">ADMIN TOOLS</div>
+            <a id="admin-goto-admin" class="admin-btn admin-btn--primary">Open /admin</a>
+            <a id="admin-logout" class="admin-btn admin-btn--primary">Logout</a>
+            <a id="admin-back-to-home" class="admin-btn admin-btn--primary">Back to home</a>
         </div>
-      </div>
-      <div class="panel-section-separator"></div>
-     
-
-      <a id="admin-run-devbuild">Run dev/build</a><br>
-      <a id="admin-goto-devtasks">Go to dev/tasks</a><br>
-      <a id="admin-goto-dev">Go to dev</a><br>
-
-      <div class="panel-section-separator"></div>
-
-      <a id="admin-change-stage">Change Stage</a><br>
-      <a id="admin-change-environment">Change Environment</a><br>
-      <a id="admin-flush-cache-page">Clear Page Cache</a><br>
-
-      <div class="panel-section-separator"></div>
-
-      <a id="admin-goto-admin">Go to Admin</a><br>
-
     </div>
 
-  <script src="admin.js"></script>
+    <script src="admin.js"></script>
 </body>
-
 </html>
